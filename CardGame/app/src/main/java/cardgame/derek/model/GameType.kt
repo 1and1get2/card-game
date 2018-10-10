@@ -4,14 +4,15 @@ package cardgame.derek.model
  * User: derek
  * Date: 10/10/18 1:03 PM
  */
-interface GameType <C : Card> {
+interface GameType<C : Card> {
     val grid: Pair<out Int, out Int>
+    val name: String
 
-    companion object {
-        val a = "A"
-    }
+    fun getCards(): List<C>
 
-    fun getCards() : Array<Array<C>>
+    fun shouldCheckMatch(vararg cards: C): Boolean
 
+    fun checkMatch(vararg cards: C): Int
 
+    fun revealCard(card: C): Int
 }

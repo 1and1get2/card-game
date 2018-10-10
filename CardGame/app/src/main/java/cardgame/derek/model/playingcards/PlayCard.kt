@@ -1,5 +1,7 @@
 package cardgame.derek.model.playingcards
 
+import android.graphics.Color
+import androidx.annotation.ColorInt
 import cardgame.derek.model.Card
 import cardgame.derek.model.CardCompanionMethods
 import cardgame.derek.util.random
@@ -35,5 +37,9 @@ data class PlayCard(val suit: Char, val rank: String) : Card() {
             return cards.shuffled(random = random).subList(0, total)
         }
     }
-    
+
+    override val cardFrontText: String get() = "$rank$suit"
+
+    @get:ColorInt
+    override val cardFrontTextColor: Int get() = Color.BLACK
 }

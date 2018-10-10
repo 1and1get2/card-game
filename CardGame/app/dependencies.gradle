@@ -51,6 +51,8 @@ ext {
             appcompat      : "androidx.appcompat:appcompat:$versions.jetpack",
             core_ktx       : "androidx.core:core-ktx:$versions.jetpack",
             constraint     : "androidx.constraintlayout:constraintlayout:2.0.0-alpha2",
+            lifecycle      : "androidx.lifecycle:lifecycle-extensions:2.0.0-alpha1",
+            viewmodel      : "androidx.lifecycle:lifecycle-viewmodel-ktx:2.0.0-alpha1",
     ]
 
     rxJava = [

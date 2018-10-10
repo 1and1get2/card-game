@@ -19,13 +19,14 @@ enum class Color(@ColorInt val color: Int) {
     Purple(android.graphics.Color.parseColor("#551a8b")),
 }
 
-data class SetsCard(val number: Int, val symbol: Symbol, val shading: Shading, val color: Color) : Card() {
+enum class Number{ One, Two, Three }
+
+data class SetsCard(val number: Number, val symbol: Symbol, val shading: Shading, val color: Color) : Card() {
 
     companion object : CardCompanionMethods<SetsCard> {
-        private val numbers = arrayOf(1, 2, 3)
 
-        // 3 ^ 3 = 81
-        override val totalSize: Int get() = Symbol.values().size * Shading.values().size * Color.values().size * numbers.size
+        // 3 ^ 4 = 81
+        override val totalSize: Int get() = Symbol.values().size * Shading.values().size * Color.values().size * Number.values().size
 
         // all the available cards
         val cards by lazy {
@@ -33,7 +34,7 @@ data class SetsCard(val number: Int, val symbol: Symbol, val shading: Shading, v
             for (symbol in Symbol.values()){
                 for (shading in Shading.values()) {
                     for (color in Color.values()) {
-                        for (num in numbers) {
+                        for (num in Number.values()) {
                             cards.add(SetsCard(number = num, symbol = symbol, shading = shading, color = color))
                         }
                     }
@@ -47,4 +48,9 @@ data class SetsCard(val number: Int, val symbol: Symbol, val shading: Shading, v
             return cards.shuffled(random = random).subList(0, total)
         }
     }
+
+    override val cardFrontText: String get() = "${number.name}\n${shading.name}\n${symbol.name}"
+
+    @get:ColorInt
+    override val cardFrontTextColor: Int get() = color.color
 }
