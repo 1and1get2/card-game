@@ -49,6 +49,7 @@ ext {
 
     jetpack = [
             appcompat      : "androidx.appcompat:appcompat:$versions.jetpack",
+            cardview       : "androidx.cardview:cardview:1.0.0",
             core_ktx       : "androidx.core:core-ktx:$versions.jetpack",
             constraint     : "androidx.constraintlayout:constraintlayout:2.0.0-alpha2",
             lifecycle      : "androidx.lifecycle:lifecycle-extensions:2.0.0-alpha1",

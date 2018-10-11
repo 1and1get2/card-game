@@ -1,18 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <data>
+
+            <variable
+                name="viewmodel"
+                type="cardgame.derek.ui.playboard.PlayBoardViewModel" />
+
+        </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+        <TextView
+            app:layout_constraintTop_toTopOf="parent"
+            android:id="@+id/playboard_score"
+            android:gravity="center_vertical|start"
+            android:text="@{`Score: ` + String.valueOf(viewmodel.score)}"
+            android:maxLines="1"
+            android:minHeight="40dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+        <LinearLayout
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:orientation="horizontal"
+            android:id="@+id/playboard_controls"
+            android:minHeight="60dp"
+            android:gravity="center"
+            android:layout_margin="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/playboard_stop_button"
+                android:text="stop"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:onClick="@{() -> viewmodel.stopGame()}"
+                />
+
+            <Button
+                android:text="restart"
+                android:id="@+id/playboard_restart_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:onClick="@{() -> viewmodel.restartGame()}" />
+
+        </LinearLayout>
+
+
+        <fragment
+            app:layout_constraintTop_toBottomOf="@id/playboard_score"
+            app:layout_constraintBottom_toTopOf="@id/playboard_controls"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:name="cardgame.derek.ui.playboard.PlayBoardFragment"
+            android:id="@+id/playboard_fragment"
+            android:layout_width="0dp"
+            android:layout_height="0dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -1,6 +1,7 @@
 package cardgame.derek.model
 
 import androidx.annotation.ColorInt
+import cardgame.derek.R
 
 /**
  * User: derek
@@ -8,9 +9,11 @@ import androidx.annotation.ColorInt
  */
 abstract class Card {
     companion object {
-        val frontBackgroundName = "CardFrontBackground.png"
-        val cardBackBackgroundName = "CardBack.png"
+        const val CARD_FRONT_BACKGROUND = R.drawable.cardfront_background
+        const val CARD_BACK_BACKGROUND = R.drawable.cardback
     }
+
+    var flipped = true
 
     abstract val cardFrontText: String
 
