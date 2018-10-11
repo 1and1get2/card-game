@@ -29,6 +29,7 @@ interface CardCompanionMethods <C : Card> {
 
     /**
      * generate random cards based on game's grid
+     * @return new list
      */
     fun getCards(total: Int) : List<C>
 }

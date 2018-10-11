@@ -1,5 +1,6 @@
 package cardgame.derek.ui.playboard
 
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,11 +10,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import cardgame.derek.model.playingcards.PlayCardGameType
-import timber.log.Timber
-
-
-
 
 
 class PlayBoardFragment : Fragment() {
@@ -27,7 +23,6 @@ class PlayBoardFragment : Fragment() {
     private lateinit var adapter : RecyclerView.Adapter<CardViewHolder>
     private lateinit var layoutManager: GridLayoutManager
 
-    private val cards = PlayCardGameType().getCards()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -37,6 +32,7 @@ class PlayBoardFragment : Fragment() {
             setHasFixedSize(true)
             adapter = this@PlayBoardFragment.adapter
             layoutManager = this@PlayBoardFragment.layoutManager
+            addItemDecoration(SpacesItemDecoration(30))
         }
         return recyclerView
     }
@@ -48,10 +44,7 @@ class PlayBoardFragment : Fragment() {
         viewModel = activity?.run { ViewModelProviders.of(this).get(PlayBoardViewModel::class.java) }
                 ?: throw Exception("Invalid Activity")
 
-        viewModel.cards.observe(viewLifecycleOwner, Observer {
-            adapter.notifyDataSetChanged()
-            Timber.d("itemCount has changed, card size: ${adapter.itemCount}, it:${it?.size}")
-        })
+        viewModel.cards.observe(viewLifecycleOwner, Observer { adapter.notifyDataSetChanged() })
     }
 
 
@@ -76,9 +69,30 @@ class PlayBoardFragment : Fragment() {
 
         override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
             val card = viewModel.cards.value?.get(position)
-            (holder.itemView as CardView).card = card
+            (holder.itemView as? CardView)?.let {
+                it.card = card
+            }
         }
     }
 
     class CardViewHolder(itemView : CardView) : RecyclerView.ViewHolder(itemView)
+
+
+    inner class SpacesItemDecoration(private val space: Int) : RecyclerView.ItemDecoration() {
+
+        override
+        fun getItemOffsets(outRect: Rect, view: View,
+                           parent: RecyclerView, state: RecyclerView.State) {
+            outRect.left = space
+            outRect.right = space
+            outRect.bottom = space
+
+            // Add top margin only for the first item to avoid double space between items
+            if (parent.getChildLayoutPosition(view) < viewModel.grid?.first ?: 4) {
+                outRect.top = space
+            } else {
+                outRect.top = 0
+            }
+        }
+    }
 }

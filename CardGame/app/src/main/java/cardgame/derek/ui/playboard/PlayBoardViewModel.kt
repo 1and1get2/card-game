@@ -3,6 +3,7 @@ package cardgame.derek.ui.playboard
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import cardgame.derek.BuildConfig
 import cardgame.derek.model.Card
 import cardgame.derek.model.GameType
 import cardgame.derek.model.playingcards.PlayCardGameType
@@ -38,7 +39,20 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
     }
 
     private fun getNewCards() {
-        cards.value = gameType.value?.getCards()
+        //cards.value = gameType.value?.getCards()
+
+        cards.value = gameType.value?.getCards()?.apply {
+
+            // sanity check, make sure the cards are clean and flipped from previous games
+            // refer to card.getCards()
+
+            forEach{
+                if (BuildConfig.DEBUG) {
+                    if (!it.flipped) throw RuntimeException("dirty card found")
+                } else { it.flipped = true } // dirty fix
+            }
+        }
+
         Timber.d("got new cards: ${cards.value?.size}")
     }
 

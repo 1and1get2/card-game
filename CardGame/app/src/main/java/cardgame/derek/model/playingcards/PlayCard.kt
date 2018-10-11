@@ -34,7 +34,8 @@ data class PlayCard(val suit: Char, val rank: String) : Card() {
 
         override fun getCards(total : Int): List<PlayCard> {
             if (total >= totalSize) throw IndexOutOfBoundsException("x * y = $total and exceeded total size: $totalSize")
-            return cards.shuffled(random = random).subList(0, total)
+            // cards need to be deep copied
+            return cards.shuffled(random = random).subList(0, total).map { it.copy() }
         }
     }
 

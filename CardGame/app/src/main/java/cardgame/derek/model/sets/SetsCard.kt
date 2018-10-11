@@ -45,7 +45,7 @@ data class SetsCard(val number: Number, val symbol: Symbol, val shading: Shading
 
         override fun getCards(total : Int): List<SetsCard> {
             if (total >= totalSize) throw IndexOutOfBoundsException("x * y = $total and exceeded total size: $totalSize")
-            return cards.shuffled(random = random).subList(0, total)
+            return cards.shuffled(random = random).subList(0, total).map { it.copy() }
         }
     }
 
