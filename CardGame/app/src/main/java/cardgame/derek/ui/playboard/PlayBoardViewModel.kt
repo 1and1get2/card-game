@@ -8,6 +8,7 @@ import cardgame.derek.model.Card
 import cardgame.derek.model.GameType
 import cardgame.derek.model.playingcards.PlayCardGameType
 import cardgame.derek.model.sets.SetsGameType
+import cardgame.derek.util.SingleLiveEvent
 import timber.log.Timber
 
 /**
@@ -21,7 +22,9 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
         val GAME_TYPES : Array<GameType<out Card>> by lazy { arrayOf(PlayCardGameType(), SetsGameType()) }
     }
 
-    val gameTypes get() = PlayBoardViewModel.GAME_TYPES
+    private val gameTypes get() = PlayBoardViewModel.GAME_TYPES
+
+    val gameStoped = MutableLiveData<Boolean>().apply { value = true }
 
     val gameType = MutableLiveData<GameType<out Card>>()
 
@@ -29,13 +32,14 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
 
     val score = MutableLiveData<Int>().apply { value = 0 }
 
+    val gameTypeSelectEvent = SingleLiveEvent<Array<GameType<out Card>>>()
 
     val grid : Pair<Int, Int>? get() = gameType.value?.grid
 
 
 
     fun flipCard(card: Card) {
-
+        var list = cards.value?.filter { !card.flipped }
     }
 
     private fun getNewCards() {
@@ -61,18 +65,40 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
         score.postValue(0)
     }
 
-    fun selectGameType(gameType : GameType<out Card>? = null) {
+    fun setGameType(gameType : GameType<out Card>? = null) {
         this.gameType.value = gameType
+        stopGame()
         getNewCards()
     }
 
-    fun stopGame() {
-        score.value?.let {
-            score.value = it + 1
-        }
-        Timber.d("stopGame score:${score.value}")
+    fun selectGameType() {
+        gameTypeSelectEvent.call(gameTypes)
+    }
 
-//        selectGameType()
+    fun startOrStopGame() {
+        if (gameStoped.value == false) {
+            stopGame()
+        } else {
+            startGame()
+        }
+    }
+
+    fun stopGame() {
+        gameStoped.value = true
+        Timber.d("stopGame score:${score.value}")
+    }
+
+    fun startGame() {
+        if (gameType.value == null) {
+            selectGameType()
+        }
+        gameStoped.value = false
+        getNewCards()
+    }
+
+
+    fun onStart() {
+        selectGameType()
     }
 
 

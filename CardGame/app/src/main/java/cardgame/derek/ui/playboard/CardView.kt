@@ -26,7 +26,7 @@ class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     : CardView(context, attrs) {
 
     companion object {
-        const val ANIMATION_DURATION: Long = 300
+        const val ANIMATION_DURATION: Long = 200
     }
 
     private val backgroundImageView = ImageView(context)
@@ -58,20 +58,16 @@ class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     private var animating = false
 
-    private var flipped : Boolean
-        set(value) {
-            card?.flipped = value
-            invalidate()
-        }
-        get() = card?.flipped ?: false
-
+    var flipped: Boolean = true
 
 
 
     var card: Card? = null
         set(value) {
             field = value
-            flipped = card?.flipped ?: true
+            if (flipped != value?.flipped) {
+                oa1.start()
+            }
             frontTextView.text = value?.cardFrontText
             frontTextView.setTextColor(value?.cardFrontTextColor ?: Color.BLACK)
             invalidate()
@@ -79,7 +75,7 @@ class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
             this@CardView.setOnClickListener {
                 Timber.d("click on card: ${card?.cardFrontText}")
                 if (!animating) {
-                    oa1.start()
+                    card?.apply { flipped = !flipped }.also { card = it }
                 }
             }
         }

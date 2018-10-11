@@ -1,6 +1,9 @@
 package cardgame.derek
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +11,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import cardgame.derek.databinding.ActivityMainBinding
+import cardgame.derek.model.Card
+import cardgame.derek.model.GameType
 import cardgame.derek.ui.playboard.PlayBoardViewModel
 import timber.log.Timber
 
@@ -31,27 +36,48 @@ class MainActivity : AppCompatActivity() {
             setLifecycleOwner(this@MainActivity)
         }
 
-        if (viewModel.gameType.value == null) {selectGameType()}
-
         viewModel.gameType.observe(this, Observer {
             supportActionBar?.title = it?.name ?: "Card Game"
-            if (it == null) { selectGameType() }
+
         })
 
 
+        viewModel.gameTypeSelectEvent.observe(this, Observer {
+            Timber.d("viewModel.gameTypeSelectEvent $it")
+            if (it != null && it.isNotEmpty()) { selectGameType(it) }
+        })
 
     }
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.main_activity_menu, menu)
+        return true
+    }
 
-    private fun selectGameType() {
-        val options = viewModel.gameTypes
-        val names = options.map { it.name }.toTypedArray()
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when (item?.itemId) {
+            R.id.menu_game_type -> {
+                viewModel.selectGameType()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.onStart()
+    }
+
+    private fun selectGameType(gameTypes: Array<GameType<out Card>>) {
+        val names = gameTypes.map { it.name }.toTypedArray()
         AlertDialog.Builder(this).apply {
             setTitle("select game type:")
             setCancelable(false)
             setItems(names) { dialog, which ->
-                val gameType = options[which]
+                val gameType = gameTypes[which]
                 Timber.d("selected: $which, ${gameType.name}")
-                viewModel.selectGameType(gameType)
+                viewModel.setGameType(gameType)
                 dialog.dismiss()
             }
             show()

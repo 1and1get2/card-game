@@ -13,6 +13,9 @@ abstract class Card {
         const val CARD_BACK_BACKGROUND = R.drawable.cardback
     }
 
+    /**
+     * card-back up
+     */
     var flipped = true
 
     abstract val cardFrontText: String

@@ -20,10 +20,11 @@
         <TextView
             app:layout_constraintTop_toTopOf="parent"
             android:id="@+id/playboard_score"
+            android:layout_marginLeft="40dp"
             android:gravity="center_vertical|start"
-            android:text="@{`Score: ` + String.valueOf(viewmodel.score)}"
+            android:text="@{`Score: ` + String.valueOf(safeUnbox(viewmodel.score.getValue()))}"
             android:maxLines="1"
-            android:minHeight="40dp"
+            android:minHeight="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
@@ -33,17 +34,17 @@
             android:orientation="horizontal"
             android:id="@+id/playboard_controls"
             android:minHeight="60dp"
-            android:gravity="center"
+            android:gravity="center_vertical|end"
             android:layout_margin="10dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="50dp">
 
             <Button
                 android:id="@+id/playboard_stop_button"
-                android:text="stop"
+                android:text="@{viewmodel.gameStoped.getValue() ? `Start` : `Stop`}"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:onClick="@{() -> viewmodel.stopGame()}"
+                android:onClick="@{() -> viewmodel.startOrStopGame()}"
                 />
 
             <Button

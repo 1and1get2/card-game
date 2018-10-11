@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import cardgame.derek.R
 
 
 class PlayBoardFragment : Fragment() {
@@ -22,17 +23,19 @@ class PlayBoardFragment : Fragment() {
     private lateinit var recyclerView : RecyclerView
     private lateinit var adapter : RecyclerView.Adapter<CardViewHolder>
     private lateinit var layoutManager: GridLayoutManager
+    private var gridVerticalSpace: Int = 0
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         layoutManager = GridLayoutManager(inflater.context, 4)
         adapter = Adapter()
+        gridVerticalSpace = resources.getDimension(R.dimen.grid_cell_vertical_space).toInt()
         recyclerView = RecyclerView(inflater.context).apply {
             setHasFixedSize(true)
             adapter = this@PlayBoardFragment.adapter
             layoutManager = this@PlayBoardFragment.layoutManager
-            addItemDecoration(SpacesItemDecoration(30))
+            addItemDecoration(SpacesItemDecoration(gridVerticalSpace))
         }
         return recyclerView
     }
@@ -55,7 +58,7 @@ class PlayBoardFragment : Fragment() {
             // calculate the height of each card
             viewModel.grid?.run {
                 val lp = GridLayoutManager.LayoutParams(parent.layoutParams)
-                lp.height = parent.measuredHeight / this.second
+                lp.height = (parent.measuredHeight - (this.second + 1) * gridVerticalSpace) / this.second
                 lp.width = GridLayoutManager.LayoutParams.MATCH_PARENT
                 cardView.layoutParams = lp
             }
