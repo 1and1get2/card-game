@@ -188,14 +188,9 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
 
 
     fun onStart() {
-        selectGameType()
+        if (gameType.value == null) {
+            selectGameType()
+        }
     }
-
-
-    override fun onCleared() {
-        super.onCleared()
-
-    }
-
 
 }

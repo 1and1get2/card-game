@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.matchEndedEvent.observe(this, Observer {
             AlertDialog.Builder(this).apply {
-                setTitle("Game has ended with score ${viewModel.score.value}")
+                setTitle("Game has finished with score ${viewModel.score.value}")
                 setCancelable(false)
                 setPositiveButton("Restart") {_, _ ->
                     viewModel.restartGame()
