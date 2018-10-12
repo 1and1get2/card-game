@@ -1,6 +1,8 @@
 package cardgame.derek.model.sets
 
+import cardgame.derek.model.Card
 import cardgame.derek.model.GameType
+import cardgame.derek.util.asListOfType
 
 /**
  * User: derek
@@ -16,11 +18,17 @@ class SetsGameType : GameType<SetsCard> {
      */
     override fun getCards(): List<SetsCard> = SetsCard.getCards(grid.first * grid.second)
 
-    override fun shouldCheckMatch(vararg cards: SetsCard): Boolean = cards.size == 3
+    override fun shouldCheckMatch(cards: List<Card>): Boolean = cards.size == 3
 
-    override fun checkMatch(vararg cards: SetsCard): Int {
-        return if (isSet(*cards)) 16 else -2
+    override fun checkMatch(cards: List<Card>): Int {
+        if (isSet(castList(cards))) return 16
+        return -2
     }
+
+    private fun castList(cards: List<Card>) : List<SetsCard> =
+            cards.asListOfType() ?: throw TypeCastException("unable to cast type to List<SetsCard>")
+
+    override fun revealCard(card: Card): Int = -1
 
     /**
      * A set consists of three cards which satisfy all of these conditions:
@@ -31,7 +39,7 @@ class SetsGameType : GameType<SetsCard> {
      *
      *      todo: wip
      */
-    private fun isSet(vararg cards: SetsCard) : Boolean {
+    private fun isSet(cards: List<SetsCard>) : Boolean {
         if (cards.size == 3) {
             /*var number = 0
             var symbol = 0
@@ -50,8 +58,6 @@ class SetsGameType : GameType<SetsCard> {
         }
         return false
     }
-
-    override fun revealCard(card: SetsCard): Int = -1
 
 
 }

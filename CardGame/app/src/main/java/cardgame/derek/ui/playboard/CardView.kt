@@ -1,13 +1,12 @@
 package cardgame.derek.ui.playboard
 
+import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
-import android.graphics.Color
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
@@ -22,7 +21,7 @@ import timber.log.Timber
  * Date: 10/10/18 8:10 PM
  */
 
-class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null)
+class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, val viewModel: PlayBoardViewModel, val index: Int = -1)
     : CardView(context, attrs) {
 
     companion object {
@@ -32,55 +31,64 @@ class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     private val backgroundImageView = ImageView(context)
     private val frontTextView = TextView(context)
 
-    private val oa1 = ObjectAnimator.ofFloat(this, "scaleX", 1f, 0f)
-            .apply {
-                interpolator = DecelerateInterpolator()
-                addListener(onEnd = {
-                    flipped = !flipped
-                    invalidate()
-                    oa2.start()
-                }, onStart = {
-                    animating = true
-                })
-                duration = ANIMATION_DURATION / 2
-
-            }
-
-    private val oa2 = ObjectAnimator.ofFloat(this, "scaleX", 0f, 1f)
-            .apply {
-                interpolator = AccelerateDecelerateInterpolator()
-                duration = ANIMATION_DURATION / 2
-                addListener(onEnd = {
-                    animating = false
-                })
-            }
-
+    private val animatorSet = AnimatorSet().apply {
+        playSequentially(
+                ObjectAnimator.ofFloat(this@CardView, "scaleX", 1f, 0f)
+                        .apply { addListener(onStart = {
+                            Timber.d("animatorSet ani:1 onStart")
+                        }, onEnd = {
+                            Timber.d("animatorSet ani:1 onEnd")
+                            flipped = !flipped
+                            invalidate()
+                        }) },
+                ObjectAnimator.ofFloat(this@CardView, "scaleX", 0f, 1f)
+                        .apply { addListener(onStart = {
+                            Timber.d("animatorSet ani:2 onStart")
+                        }, onEnd = {
+                            Timber.d("animatorSet ani:2 onEnd")
+                        })}
+        )
+        duration = ANIMATION_DURATION
+        interpolator = AccelerateDecelerateInterpolator()
+        addListener(onStart = {
+            animating = true
+            Timber.d("animatorSet onStart")
+        }, onEnd = {
+            animating = false
+            Timber.d("animatorSet onEnd")
+        })
+    }
 
     private var animating = false
 
-    var flipped: Boolean = true
+    private var flipped: Boolean = true
 
+    private var mCard : Card? = null
 
-
-    var card: Card? = null
+    var card: Card
+        get() = mCard!!
         set(value) {
-            field = value
-            if (flipped != value?.flipped) {
-                oa1.start()
+            if (animating) {
+                animatorSet.end()
             }
-            frontTextView.text = value?.cardFrontText
-            frontTextView.setTextColor(value?.cardFrontTextColor ?: Color.BLACK)
+
+            // skip animation for new card
+            val newCard = mCard != value
+            val skipFlip = flipped == value.flipped
+
+            mCard = value
+
+            frontTextView.text = value.cardFrontText
+            frontTextView.setTextColor(value.cardFrontTextColor)
             invalidate()
 
-            this@CardView.setOnClickListener {
-                Timber.d("click on card: ${card?.cardFrontText}")
-                if (!animating) {
-                    card?.apply { flipped = !flipped }.also { card = it }
-                }
+            if (!skipFlip) {
+                animatorSet.start()
+            }
+            setOnClickListener {
+                viewModel.flipCard(value)
             }
         }
-
-
 
     init {
         addView(backgroundImageView)
@@ -94,7 +102,8 @@ class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     override fun invalidate() {
         super.invalidate()
-        backgroundImageView.setBackgroundResource(if (flipped) Card.CARD_BACK_BACKGROUND else Card.CARD_FRONT_BACKGROUND)
+        backgroundImageView.setBackgroundResource(
+                if (flipped) Card.CARD_BACK_BACKGROUND else Card.CARD_FRONT_BACKGROUND)
         frontTextView.visibility = if (flipped) View.INVISIBLE else View.VISIBLE
     }
 }

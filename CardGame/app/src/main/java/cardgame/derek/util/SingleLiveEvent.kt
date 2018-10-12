@@ -58,6 +58,7 @@ class SingleLiveEvent<T> : MutableLiveData<T>() {
         if (hasActiveObservers()) {
             Log.w(TAG, "Multiple observers registered but only one will be notified of changes.")
         }
+
         mObservers.add(observer)
         // Observe the internal MutableLiveData
         super.observe(owner, mObserver)

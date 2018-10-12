@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cardgame.derek.R
+import timber.log.Timber
 
 
 class PlayBoardFragment : Fragment() {
@@ -53,7 +54,7 @@ class PlayBoardFragment : Fragment() {
 
     inner class Adapter : RecyclerView.Adapter<CardViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
-            val cardView = CardView(parent.context)
+            val cardView = CardView(parent.context, viewModel = viewModel, index = viewType)
 
             // calculate the height of each card
             viewModel.grid?.run {
@@ -66,14 +67,15 @@ class PlayBoardFragment : Fragment() {
             return CardViewHolder(cardView)
         }
 
-        override fun getItemCount(): Int = (viewModel.cards.value?.size ?: 0).also {
-//            Timber.d("Adapter get item count: $it")
-        }
+        override fun getItemViewType(position: Int): Int = position
+
+        override fun getItemCount(): Int = (viewModel.cards.value?.size ?: 0)
 
         override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
-            val card = viewModel.cards.value?.get(position)
+            val card = viewModel.cards.value!!.get(position)
             (holder.itemView as? CardView)?.let {
                 it.card = card
+                if (it.index != position) { Timber.w("Item index mismatch, cardview:${it.index} position:$position") }
             }
         }
     }

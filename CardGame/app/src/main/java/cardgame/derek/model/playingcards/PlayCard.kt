@@ -14,7 +14,6 @@ import cardgame.derek.util.random
 
 data class PlayCard(val suit: Char, val rank: String) : Card() {
 
-
     companion object : CardCompanionMethods<PlayCard> {
         private val suits : Array<Char> get() = arrayOf('♠', '♥', '♦', '♣')
         private val ranks get() = arrayOf("A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K")
@@ -35,7 +34,9 @@ data class PlayCard(val suit: Char, val rank: String) : Card() {
         override fun getCards(total : Int): List<PlayCard> {
             if (total >= totalSize) throw IndexOutOfBoundsException("x * y = $total and exceeded total size: $totalSize")
             // cards need to be deep copied
-            return cards.shuffled(random = random).subList(0, total).map { it.copy() }
+            return cards.shuffled(random = random).subList(0, total)
+//                    .map { it.copy() }
+                    .mapIndexed { i, playCard -> playCard.copy().apply { index = i }}
         }
     }
 
@@ -43,4 +44,8 @@ data class PlayCard(val suit: Char, val rank: String) : Card() {
 
     @get:ColorInt
     override val cardFrontTextColor: Int get() = Color.BLACK
+
+    override fun toString(): String {
+        return super.toString()
+    }
 }

@@ -1,6 +1,8 @@
 package cardgame.derek.model.playingcards
 
+import cardgame.derek.model.Card
 import cardgame.derek.model.GameType
+import cardgame.derek.util.asListOfType
 
 /**
  * User: derek
@@ -16,15 +18,21 @@ class PlayCardGameType : GameType<PlayCard> {
      */
     override fun getCards(): List<PlayCard> = PlayCard.getCards(grid.first * grid.second)
 
-    override fun revealCard(card: PlayCard): Int = -1
+    override fun revealCard(card: Card): Int = -1
 
-    override fun shouldCheckMatch(vararg cards: PlayCard): Boolean = cards.size == 2
+    override fun shouldCheckMatch(cards: List<Card>): Boolean = cards.size == 2
 
-    override fun checkMatch(vararg cards: PlayCard): Int {
-        if (cards.size == 2) {
-            if (cards[0].rank == cards[1].rank) return 16
-            if (cards[0].suit == cards[1].suit) return 4
+    override fun checkMatch(cards: List<Card>): Int {
+        castList(cards).also {
+            if (it.size == 2) {
+                if (it[0].rank == it[1].rank) return 16
+                if (it[0].suit == it[1].suit) return 4
+            }
         }
         return -2
     }
+
+
+    private fun castList(cards: List<Card>) : List<PlayCard> =
+        cards.asListOfType() ?: throw TypeCastException("unable to cast type to List<SetsCard>")
 }

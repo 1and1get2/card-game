@@ -41,7 +41,7 @@
 
             <Button
                 android:id="@+id/playboard_stop_button"
-                android:text="@{viewmodel.gameStoped.getValue() ? `Start` : `Stop`}"
+                android:text="@{viewmodel.gameStopped.getValue() ? `Start` : `Stop`}"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:onClick="@{() -> viewmodel.startOrStopGame()}"

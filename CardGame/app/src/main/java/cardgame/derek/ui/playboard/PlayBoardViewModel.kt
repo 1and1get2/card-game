@@ -24,7 +24,7 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
 
     private val gameTypes get() = PlayBoardViewModel.GAME_TYPES
 
-    val gameStoped = MutableLiveData<Boolean>().apply { value = true }
+    val gameStopped = MutableLiveData<Boolean>().apply { value = true }
 
     val gameType = MutableLiveData<GameType<out Card>>()
 
@@ -37,9 +37,28 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
     val grid : Pair<Int, Int>? get() = gameType.value?.grid
 
 
+    var index = 0
 
-    fun flipCard(card: Card) {
-        var list = cards.value?.filter { !card.flipped }
+    fun flipCard(card: Card) : Boolean {
+        var list = cards.value!!.filter { !card.flipped || it == card }
+/*        val cs = gameType.value!!.getCards()
+        cs[(index++) % gameType.value!!.size].flipped = false
+//        card.flipped = cards
+        cards.value = cs
+        val flipped = cs.filter { !it.flipped }
+        Timber.d("flipCard: ${flipped}")*/
+
+        card.flipped = !card.flipped
+        cards.value = cards.value
+/*        score.value!!.let {
+            val gaT: GameType<out Card> = PlayCardGameType()
+            val cards = gaT.getCards()
+            gaT.revealCard(card)
+            gaT.shouldCheckMatch(cards = cards)
+            val a: Int = gameType.value?.revealCard(card) ?: 0
+            score.value = it + a
+        }*/
+        return true
     }
 
     private fun getNewCards() {
@@ -63,6 +82,7 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
     fun restartGame() {
         getNewCards()
         score.postValue(0)
+        index = 0
     }
 
     fun setGameType(gameType : GameType<out Card>? = null) {
@@ -76,7 +96,7 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
     }
 
     fun startOrStopGame() {
-        if (gameStoped.value == false) {
+        if (gameStopped.value == false) {
             stopGame()
         } else {
             startGame()
@@ -84,7 +104,7 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
     }
 
     fun stopGame() {
-        gameStoped.value = true
+        gameStopped.value = true
         Timber.d("stopGame score:${score.value}")
     }
 
@@ -92,7 +112,7 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
         if (gameType.value == null) {
             selectGameType()
         }
-        gameStoped.value = false
+        gameStopped.value = false
         getNewCards()
     }
 

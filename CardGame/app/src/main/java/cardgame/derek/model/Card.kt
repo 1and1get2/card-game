@@ -18,9 +18,14 @@ abstract class Card {
      */
     var flipped = true
 
+    // this is for testing only, we shouldn't need to worry about the index
+    var index = -1
+
     abstract val cardFrontText: String
 
     @get:ColorInt abstract val cardFrontTextColor: Int
+
+    override fun toString(): String = "${javaClass.simpleName} flipped:$flipped index:$index"
 }
 
 interface CardCompanionMethods <C : Card> {
