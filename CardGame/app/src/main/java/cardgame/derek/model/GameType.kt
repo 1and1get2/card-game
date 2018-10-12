@@ -7,9 +7,10 @@ package cardgame.derek.model
  * todo: https://kotlinlang.org/docs/reference/typecasts.html
  */
 interface GameType<C : Card> {
-    val grid: Pair<out Int, out Int>
+    val grid: Pair<Int, Int>
     val size: Int get() = grid.first * grid.second
     val name: String
+
 
     fun getCards(): List<C>
 
@@ -21,7 +22,23 @@ interface GameType<C : Card> {
      *     Boolean: whether it's a match or not
      *     Int: changes on the score
      */
-    fun checkMatch(cards: List<Card>): Pair<Boolean, Int>
+    fun checkMatch(cards: List<Card>): Pair<List<Card>?, Int>
 
+    /**
+     *
+     */
     fun revealCard(card: Card): Int
+
+    /**
+     * cant find any more matches in remaining cards
+     */
+    fun checkNoMoreMatches(cards: List<Card>): Boolean
+
+
+
+    companion object {
+        fun getAllActiveSelectedCard(cards: List<Card>) = cards.filter { !it.matched && !it.flipped }
+        fun getAllNotMatchedCard(cards: List<Card>) = cards.filter { !it.matched && it.flipped }
+    }
 }
+

@@ -29,6 +29,9 @@ abstract class Card {
     @get:ColorInt abstract val cardFrontTextColor: Int
 
     override fun toString(): String = "${javaClass.simpleName} flipped:$flipped index:$index"
+
+
+
 }
 
 interface CardCompanionMethods <C : Card> {

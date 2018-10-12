@@ -13,6 +13,7 @@ import cardgame.derek.model.sets.SetsGameType
 import cardgame.derek.util.SingleLiveEvent
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.system.measureNanoTime
 
 /**
  * User: derek
@@ -22,8 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 class PlayBoardViewModel(private val context: Application) : AndroidViewModel(context) {
 
     companion object {
-        const val REVEAL_DELAY = 1500L
-        const val MATCH_DELAY = 500L // delay before greyout matched cards
+        const val REVEAL_DELAY = 1000L
+        const val MATCH_DELAY = 400L // delay before grey out matched cards
         val HANDLER = Handler()
         val GAME_TYPES : Array<GameType<out Card>> by lazy { arrayOf(PlayCardGameType(), SetsGameType()) }
     }
@@ -42,73 +43,90 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
 
     val grid : Pair<Int, Int>? get() = gameType.value?.grid
 
-    var mPending = AtomicBoolean(false)
+    val matchEndedEvent = SingleLiveEvent<Nothing>()
+
+    val gameNotStartedMessageEvent = SingleLiveEvent<String>()
+
+    private var mPendingHideCard = AtomicBoolean(false)
+
+    private var mPendingCardRefresh = false
 
 
-    var index = 0
 
     fun flipCard(card: Card) : Boolean {
-
-        if (mPending.get()) return false
+        if (gameStopped.value == true) {
+            gameNotStartedMessageEvent.call("Press start to play")
+            return false
+        }
+        if (mPendingHideCard.get()) return false
         // ignore on matched cards
         if (card.matched) return false
 
-        var currentCards = cards.value!!.filter { !it.matched && (!it.flipped || it == card) }
+        card.flipped = !card.flipped
 
-        val shouldCheckMatch = gameType.value!!.shouldCheckMatch(currentCards)
-        Timber.d("current cards:$currentCards, shouldCheckMatch:$shouldCheckMatch")
-        if (shouldCheckMatch) {
-            val ifMatch = gameType.value!!.checkMatch(currentCards)
-            updateScore(ifMatch.second)
-            if (ifMatch.first) {
-                refreshCards{ card.flipped = !card.flipped }
+        val cards = cards.value!!
+        val game = gameType.value!!
+
+        if (game.shouldCheckMatch(cards)) {
+            val checkResult = game.checkMatch(cards)
+            val matchedCards = checkResult.first
+            updateScore(checkResult.second)
+
+            if (matchedCards == null || matchedCards.isEmpty()) {
+                // no matched cards, hides all others after delay except for the currently tabbed one
+                card.flipped = false
+                mPendingCardRefresh = true
+                revealCardsTemporary(hideCards = cards.filter { !it.matched && it != card })
+            } else {
+                // matches, mark as matched
+                mPendingCardRefresh = true
                 HANDLER.postDelayed(MATCH_DELAY) {
-                    refreshCards{
-                        currentCards.forEach{it.matched = true}
+                    refreshCards{matchedCards.forEach{it.matched = true; it.flipped = false} }
+
+                    var end = false
+
+                    measureNanoTime {
+                        end = game.checkNoMoreMatches(cards)
+                    }.also {
+                        Timber.d("calculating end of match took:$it Nanoseconds")
+                    }
+
+                    if (end) {
+                        Timber.d("NoMoreMatches")
+                        matchEndedEvent.call()
                     }
                 }
-            } else {
-                // flip cards after delay
-                revealCardsTemporary(card, currentCards.filter { it != card })
             }
         } else {
-            if (card.flipped) {
+            if (!card.flipped) { // the card is now revealed
                 // reveal a card
-                updateScore(gameType.value!!.revealCard(card))
+                updateScore(game.revealCard(card))
             }
-            refreshCards{ card.flipped = !card.flipped }
-//            HANDLER.postDelayed({refreshCards{ card.flipped = !card.flipped }}, REVEAL_DELAY)
+
+            mPendingCardRefresh = true
         }
 
-/*        score.value!!.let {
-            val gaT: GameType<out Card> = PlayCardGameType()
-            val cards = gaT.getCards()
-            gaT.revealCard(card)
-            gaT.shouldCheckMatch(cards = cards)
-            val a: Int = gameType.value?.revealCard(card) ?: 0
-            score.value = it + a
-        }*/
+        if (mPendingCardRefresh) {
+            refreshCards()
+            mPendingCardRefresh = false
+        }
 
-//        card.flipped = !card.flipped
-//        cards.value = cards.value
         return true
     }
 
-    private fun revealCardsTemporary(reveal: Card, reHideCards: List<Card>, delay: Long = REVEAL_DELAY) {
-        refreshCards {reveal.flipped = false}
-        mPending.set(true)
+    private fun revealCardsTemporary(reveal: Card? = null, hideCards: List<Card>, delay: Long = REVEAL_DELAY) {
+        reveal?.let { refreshCards {it.flipped = false} }
+        mPendingHideCard.set(true)
         HANDLER.postDelayed(delay){
             refreshCards {
-                reHideCards.forEach{ it.flipped = true }
-                mPending.set(false)
+                hideCards.forEach{ it.flipped = true }
+                mPendingHideCard.set(false)
             }
         }
     }
 
     private fun refreshCards(run: (() -> Unit)? = null) {
-        if (run != null) {
-            run()
-        }
+        if (run != null) { run() }
         cards.value = cards.value
     }
 
@@ -117,19 +135,16 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
     }
 
     private fun getNewCards() {
-        //cards.value = gameType.value?.getCards()
-
-        cards.value = gameType.value?.getCards()?.apply {
-
-            // sanity check, make sure the cards are clean and flipped from previous games
-            // refer to card.getCards()
-
-            forEach{
-                if (BuildConfig.DEBUG) {
-                    if (!it.flipped) throw RuntimeException("dirty card found")
-                } else { it.flipped = true } // dirty fix
-            }
-        }
+        cards.value = gameType.value?.getCards()
+                ?.apply {
+                    // sanity check, make sure the cards are clean and flipped from previous games
+                    // refer to card.getCards()
+                    forEach {
+                        if (BuildConfig.DEBUG) {
+                            if (!it.flipped) throw RuntimeException("dirty card found")
+                        } else { it.flipped = true } // dirty fix
+                    }
+                }
 
         Timber.d("got new cards: ${cards.value?.size}")
     }
@@ -137,7 +152,6 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
     fun restartGame() {
         getNewCards()
         score.postValue(0)
-        index = 0
     }
 
     fun setGameType(gameType : GameType<out Card>? = null) {
@@ -167,6 +181,7 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
         if (gameType.value == null) {
             selectGameType()
         }
+        score.postValue(0)
         gameStopped.value = false
         getNewCards()
     }
@@ -179,6 +194,7 @@ class PlayBoardViewModel(private val context: Application) : AndroidViewModel(co
 
     override fun onCleared() {
         super.onCleared()
+
     }
 
 

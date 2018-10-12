@@ -24,7 +24,7 @@ class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     : CardView(context, attrs) {
 
     companion object {
-        const val ANIMATION_DURATION: Long = 200
+        const val ANIMATION_DURATION: Long = 100
     }
 
     private val backgroundImageView = ImageView(context)
@@ -43,16 +43,25 @@ class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     private var animating = false
 
+    // used for cheating, temporary reveal cards
+    var tempReveal = false
+
     private var flipped: Boolean = true
+        get() = field && !tempReveal
+        set(value) {
+            field = value
+            backgroundImageView.setBackgroundResource(
+                    if (flipped) Card.CARD_BACK_BACKGROUND else Card.CARD_FRONT_BACKGROUND
+            )
+            frontTextView.visibility = if (flipped) View.INVISIBLE else View.VISIBLE
+        }
 
     private var mCard : Card? = null
 
     var card: Card
         get() = mCard!!
         set(value) {
-            if (animating) {
-                animatorSet.end()
-            }
+            if (animating) { animatorSet.end() }
 
             // skip animation for new card
             // actually it's rather nice to keep the animation around
@@ -60,6 +69,7 @@ class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
             val skipFlip = flipped == value.flipped
 
             mCard = value
+            alpha = if (value.matched) 0.6f else 1f
 
             frontTextView.text = value.cardFrontText
             frontTextView.setTextColor(value.cardFrontTextColor)
@@ -81,14 +91,11 @@ class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
             gravity = Gravity.CENTER
             addView(this)
         }
+
+        flipped = true
     }
 
     override fun invalidate() {
         super.invalidate()
-        if (card.matched) {
-            frontTextView.text = card.cardFrontText + " matched"
-        }
-        backgroundImageView.setBackgroundResource(if (flipped) Card.CARD_BACK_BACKGROUND else Card.CARD_FRONT_BACKGROUND)
-        frontTextView.visibility = if (flipped) View.INVISIBLE else View.VISIBLE
     }
 }

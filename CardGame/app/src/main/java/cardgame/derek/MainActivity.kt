@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -45,6 +46,24 @@ class MainActivity : AppCompatActivity() {
         viewModel.gameTypeSelectEvent.observe(this, Observer {
             Timber.d("viewModel.gameTypeSelectEvent $it")
             if (it != null && it.isNotEmpty()) { selectGameType(it) }
+        })
+
+        viewModel.matchEndedEvent.observe(this, Observer {
+            AlertDialog.Builder(this).apply {
+                setTitle("Game has ended with score ${viewModel.score.value}")
+                setCancelable(false)
+                setPositiveButton("Restart") {_, _ ->
+                    viewModel.restartGame()
+                }
+                setNegativeButton("Ok") {_, _ ->
+                    viewModel.stopGame()
+                }
+                show()
+            }
+        })
+
+        viewModel.gameNotStartedMessageEvent.observe(this, Observer {
+            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
         })
 
     }
