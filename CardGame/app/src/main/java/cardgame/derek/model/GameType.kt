@@ -15,7 +15,13 @@ interface GameType<C : Card> {
 
     fun shouldCheckMatch(cards: List<Card>): Boolean
 
-    fun checkMatch(cards: List<Card>): Int
+    /**
+     * check the matching result of given cards
+     * @return Pair<Boolean, Int>
+     *     Boolean: whether it's a match or not
+     *     Int: changes on the score
+     */
+    fun checkMatch(cards: List<Card>): Pair<Boolean, Int>
 
     fun revealCard(card: Card): Int
 }

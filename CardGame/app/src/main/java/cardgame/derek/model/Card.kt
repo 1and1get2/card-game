@@ -13,8 +13,11 @@ abstract class Card {
         const val CARD_BACK_BACKGROUND = R.drawable.cardback
     }
 
+
+    var matched = false
+
     /**
-     * card-back up
+     * card-back upfront
      */
     var flipped = true
 

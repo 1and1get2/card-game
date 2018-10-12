@@ -13,7 +13,6 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.core.animation.addListener
 import cardgame.derek.model.Card
-import timber.log.Timber
 
 
 /**
@@ -34,29 +33,12 @@ class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     private val animatorSet = AnimatorSet().apply {
         playSequentially(
                 ObjectAnimator.ofFloat(this@CardView, "scaleX", 1f, 0f)
-                        .apply { addListener(onStart = {
-                            Timber.d("animatorSet ani:1 onStart")
-                        }, onEnd = {
-                            Timber.d("animatorSet ani:1 onEnd")
-                            flipped = !flipped
-                            invalidate()
-                        }) },
+                        .apply { addListener(onEnd = { flipped = !flipped; invalidate() }) },
                 ObjectAnimator.ofFloat(this@CardView, "scaleX", 0f, 1f)
-                        .apply { addListener(onStart = {
-                            Timber.d("animatorSet ani:2 onStart")
-                        }, onEnd = {
-                            Timber.d("animatorSet ani:2 onEnd")
-                        })}
         )
         duration = ANIMATION_DURATION
         interpolator = AccelerateDecelerateInterpolator()
-        addListener(onStart = {
-            animating = true
-            Timber.d("animatorSet onStart")
-        }, onEnd = {
-            animating = false
-            Timber.d("animatorSet onEnd")
-        })
+        addListener(onStart = { animating = true }, onEnd = { animating = false })
     }
 
     private var animating = false
@@ -73,6 +55,7 @@ class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
             }
 
             // skip animation for new card
+            // actually it's rather nice to keep the animation around
             val newCard = mCard != value
             val skipFlip = flipped == value.flipped
 
@@ -102,8 +85,10 @@ class CardView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     override fun invalidate() {
         super.invalidate()
-        backgroundImageView.setBackgroundResource(
-                if (flipped) Card.CARD_BACK_BACKGROUND else Card.CARD_FRONT_BACKGROUND)
+        if (card.matched) {
+            frontTextView.text = card.cardFrontText + " matched"
+        }
+        backgroundImageView.setBackgroundResource(if (flipped) Card.CARD_BACK_BACKGROUND else Card.CARD_FRONT_BACKGROUND)
         frontTextView.visibility = if (flipped) View.INVISIBLE else View.VISIBLE
     }
 }

@@ -20,9 +20,9 @@ class SetsGameType : GameType<SetsCard> {
 
     override fun shouldCheckMatch(cards: List<Card>): Boolean = cards.size == 3
 
-    override fun checkMatch(cards: List<Card>): Int {
-        if (isSet(castList(cards))) return 16
-        return -2
+    override fun checkMatch(cards: List<Card>): Pair<Boolean, Int> {
+        if (isSet(castList(cards))) return Pair(true, 16)
+        return Pair(false, -2)
     }
 
     private fun castList(cards: List<Card>) : List<SetsCard> =

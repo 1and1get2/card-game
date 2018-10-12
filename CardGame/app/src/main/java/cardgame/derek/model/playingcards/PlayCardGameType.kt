@@ -22,16 +22,15 @@ class PlayCardGameType : GameType<PlayCard> {
 
     override fun shouldCheckMatch(cards: List<Card>): Boolean = cards.size == 2
 
-    override fun checkMatch(cards: List<Card>): Int {
+    override fun checkMatch(cards: List<Card>): Pair<Boolean, Int> {
         castList(cards).also {
             if (it.size == 2) {
-                if (it[0].rank == it[1].rank) return 16
-                if (it[0].suit == it[1].suit) return 4
+                if (it[0].rank == it[1].rank) return Pair(true, 16)
+                if (it[0].suit == it[1].suit) return Pair(true, 4)
             }
         }
-        return -2
+        return Pair(false, -2)
     }
-
 
     private fun castList(cards: List<Card>) : List<PlayCard> =
         cards.asListOfType() ?: throw TypeCastException("unable to cast type to List<SetsCard>")
